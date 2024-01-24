@@ -2,6 +2,7 @@ from math import ceil
 
 from scapy.utils import rdpcap
 import numpy as np
+from torch.utils.data import Dataset
 from wttch.train.utils import cache_wrapper, StopWatch
 import os
 
@@ -35,7 +36,19 @@ def _try_unzip_file(path):
                 print(f'{filename} 已解压完成!')
 
 
-class USTCDataset:
+class USTCDataset(Dataset):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __len__(self):
+        return len(self.x)
+
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
+
+
+class USTCDataloader:
     data: np.ndarray
     label: np.ndarray
 
@@ -47,6 +60,15 @@ class USTCDataset:
 
         self._data = []
         self._label = []
+
+    def split_data(self, test_rate=0.2):
+        data_len = len(self.data)
+        test_len = int(data_len * test_rate)
+        indices = np.random.permutation(data_len)
+        test_indices = indices[:test_len]
+        train_indices = indices[test_len:]
+
+        return self.data[train_indices], self.label[train_indices], self.data[test_indices], self.label[test_indices]
 
     def load_data(self):
         """加载数据"""

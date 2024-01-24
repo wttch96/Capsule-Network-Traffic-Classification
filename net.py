@@ -2,7 +2,7 @@ import torch
 from wttch.train.torch.utils import get_device_local
 from wttch.train.utils import cache_wrapper
 
-from capsule.layers import Conv2dCapsuleLayer, Conv2dCapsule, DenseCapsuleLayer
+from capsule.layers import Conv2dCapsule, DenseCapsuleLayer
 from util.data.USTC import USTCDataset
 
 from torch import nn
@@ -13,8 +13,11 @@ class CapsuleNet(nn.Module):
         super(CapsuleNet, self).__init__()
 
         self.conv2d = nn.Conv2d(1, 64, kernel_size=3, stride=1)
-        self.conv2d_capsule = Conv2dCapsule(64, 128, dim_caps=8, kernel_size=2, stride=1)
-        self.full_connect_capsule = DenseCapsuleLayer(8, 2, 8)
+
+        # shape: [batch, 64, _, _] --> [batch, 128, _, _] --> [batch, _, 8] --> [batch, 16, 8]
+        self.conv2d_capsule = Conv2dCapsule(64, 128, caps_num=16, dim_caps=8, kernel_size=2, stride=1)
+
+        self.full_connect_capsule = DenseCapsuleLayer(16, 8, 2, 8)
         self.lstm = nn.LSTM(2 * 8, 32, batch_first=True)
 
         self.output = nn.Sequential(

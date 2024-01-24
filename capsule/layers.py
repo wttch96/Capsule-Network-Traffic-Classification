@@ -11,24 +11,23 @@ from capsule.function import squash
 
 class DenseCapsuleLayer(nn.Module):
 
-    def __init__(self, in_caps_dim, out_caps_num, out_caps_dim, routing=3):
+    def __init__(self, in_num_caps, in_dim_caps, out_caps_num, out_caps_dim, routing=3):
         super(DenseCapsuleLayer, self).__init__()
 
-        self.in_caps_dim = in_caps_dim
+        self.in_num_caps = in_num_caps
+        self.in_dim_caps = in_dim_caps
         self.out_caps_num = out_caps_num
         self.out_caps_dim = out_caps_dim
         self.routing = routing
-        self.W = None
-        self.in_caps_num = 0
+
+        self.W = nn.Parameter(
+            torch.zeros(self.out_caps_num, self.in_num_caps, self.out_caps_dim, self.in_dim_caps,
+                        device=get_device_local()))
+
+        xavier_uniform_(self.W)
 
     def forward(self, x: torch.Tensor):
         # x shape: [batch_size, in_caps_num, in_caps_dim]
-        if self.W is None:
-            self.in_caps_num = x.shape[1]
-            self.W = nn.Parameter(
-                torch.zeros(self.out_caps_num, x.shape[1], self.out_caps_dim, self.in_caps_dim,
-                            device=get_device_local()))
-            xavier_uniform_(self.W)
         # -> [batch_size, 1, in_caps_num, in_caps_dim, 1]
         x = x[:, None, :, :, None]
         # W shape: [out_caps_num, in_caps_num, out_caps_dim, in_caps_dim]
@@ -39,7 +38,7 @@ class DenseCapsuleLayer(nn.Module):
         # 动态路由最后一次才使用 u_hat 进行梯度
         u_hat_detached = u_hat.detach()
 
-        b = torch.zeros((x.size(0), self.out_caps_num, self.in_caps_num), device=get_device_local())
+        b = torch.zeros((x.size(0), self.out_caps_num, self.in_num_caps), device=get_device_local())
 
         outputs = None
 
@@ -70,27 +69,6 @@ class DenseCapsuleLayer(nn.Module):
         return torch.squeeze(outputs, dim=-2)
 
 
-class Conv2dCapsuleLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, dim_caps, caps_num, kernel_size, stride=1, padding=0):
-        super(Conv2dCapsuleLayer, self).__init__()
-
-        self.caps_num = caps_num
-
-        def create_capsule(idx):
-            capsule = Conv2dCapsule(in_channels, out_channels, dim_caps=dim_caps, kernel_size=kernel_size,
-                                    stride=stride, padding=padding)
-
-            self.add_module("capsule_{}".format(idx), capsule)
-            return capsule
-
-        self.modules = [create_capsule(i) for i in range(caps_num)]
-
-    def forward(self, x):
-        x = [self.modules[i](x) for i in range(self.caps_num)]  # type: list[torch.Tensor]
-        output = torch.stack(x, dim=1)
-        return output
-
-
 class Conv2dCapsule(nn.Module):
     """
     单个卷积胶囊单元。
@@ -98,10 +76,12 @@ class Conv2dCapsule(nn.Module):
     然后将数据进行一次 squash 激活函数。
     """
 
-    def __init__(self, in_channels, out_channels, dim_caps, kernel_size, stride=1, padding=0):
+    def __init__(self, in_channels, out_channels, caps_num, dim_caps, kernel_size, stride=1, padding=0):
         super(Conv2dCapsule, self).__init__()
+        self.caps_num = caps_num
         self.dim_caps = dim_caps
         self.conv2d = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
+        self.W = None
 
     def forward(self, x):
         # batch_size * in_channels *
@@ -112,9 +92,15 @@ class Conv2dCapsule(nn.Module):
         # ((H + 2 * padding - (kernel_size - 1) - 1) / stride + 1) *
         # ((W + 2 * padding - (kernel_size - 1) - 1) / stride + 1)
         x = self.conv2d(x)  # type: torch.Tensor
-        # batch_size * out_channels * 17 * 1098
-        # ->
-        # batch_size * -1 * 8
+        # x     shape: [batch, out_channels, s1, s2]
+        # ----> shape: [batch, -1, dim_caps]
         x = x.view(x.size(0), -1, self.dim_caps)
+        # x     shape: [batch, -1, dim_caps]
+        # W     shape: [caps_num, ]
+        if self.W is None:
+            self.W = nn.Parameter(torch.zeros((self.caps_num, x.shape[1]), device=get_device_local()))
+            xavier_uniform_(self.W)
+        # W @ x shape: [batch, caps_num, dim_caps]
+        x = squash(self.W @ x)
 
         return squash(x)
