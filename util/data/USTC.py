@@ -37,6 +37,7 @@ def _try_unzip_file(path):
 
 class USTCDataset:
     data: np.ndarray
+    label: np.ndarray
 
     def __init__(self, file_path, M, N):
         self.M = M
@@ -45,10 +46,12 @@ class USTCDataset:
         self._origin_file_path = file_path
 
         self._data = []
+        self._label = []
 
     def load_data(self):
         """加载数据"""
         self._data = []
+        self._label = []
         # 尝试解压
         self._stopwatch.start('Unzip .7z file')
         _try_unzip_file(f'{self._origin_file_path}/Benign')
@@ -59,7 +62,9 @@ class USTCDataset:
         self._load_pcap_original_by_fold(f'{self._origin_file_path}/Malware')
 
         self.data = np.concatenate(self._data)
+        self.label = np.array(self._label)
         self._data = []
+        self._label = []
         self._stopwatch.display()
 
     def _load_pcap_original_by_fold(self, fold):
@@ -82,7 +87,7 @@ class USTCDataset:
         pcap = rdpcap(filename)
         data_count = ceil(len(pcap) / self.N)
         data_len = data_count * self.N
-        pck_data = np.zeros((data_len, self.M + 1))
+        pck_data = np.zeros((data_len, self.M))
 
         label = None
         for t in all_types:
@@ -93,14 +98,15 @@ class USTCDataset:
         if label is None:
             raise ValueError(f'未知类型: {filename}')
 
-        pck_data[:, -1] = label
-
         for i, data in enumerate(pcap):
             arr_len = len(data.original)
             if arr_len >= self.M:
                 pck_data[i, :self.M] = np.array(bytearray(data.original[:self.M])) / 255
             else:
                 pck_data[i, :arr_len] = np.array(bytearray(data.original)) / 255
-        pck_data = pck_data.reshape((data_count, self.N, self.M + 1))
+        pck_data = pck_data.reshape((data_count, self.N, self.M))
+
+        for _ in range(data_count):
+            self._label.append(label)
         self._data.append(pck_data)
         self._stopwatch.stop()
