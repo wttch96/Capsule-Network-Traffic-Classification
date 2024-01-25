@@ -2,3 +2,4 @@ scapy~=2.5.0
 numpy~=1.26.3
 py7zr~=0.20.8
 torch~=2.1.0
+wttch-train-helper~=0.0.12
