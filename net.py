@@ -26,6 +26,8 @@ class CapsuleNet(nn.Module):
         )
 
     def forward(self, x: torch.Tensor):
+        # batch_size, 20, 1100 -> batch_size, 1, 20, 1100
+        x = x.reshape((x.shape[0], -1) + x.shape[1:])
         # batch_size, 1, 20, 1100 -> batch_size, 64, 18, 1098
         x = self.conv2d(x)
         # batch_size, 64, 18, 1098 -> batch_size, 16,  298384, 8

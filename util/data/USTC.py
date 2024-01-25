@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 from wttch.train.utils import cache_wrapper, StopWatch
 import os
 
-from py7zr import SevenZipFile
+# from py7zr import SevenZipFile
 
 benign_types = ['SMB', 'Weibo', 'BitTorrent', 'Facetime', 'FTP', 'Gmail', 'MySQL', 'Outlook', 'Skype',
                 'WorldOfWarcraft']
@@ -17,23 +17,23 @@ malware_type2idx = {bt: i + 10 for i, bt in enumerate(malware_types)}
 type2idx = {bt: i for i, bt in enumerate(all_types)}
 
 
-def _try_unzip_file(path):
-    """
-    尝试解压指定目录下的 7z 文件
-    """
-    for filename in os.listdir(f'{path}'):
-        if filename.endswith('.7z'):
-            full_path = f'{path}/{filename.replace(".7z", "")}'
-            if os.path.exists(full_path) or os.path.exists(f'{full_path}.pcap'):
-                # 已经解压
-                print(f'{filename} 已经解压.')
-            else:
-                # 解压
-                print(f'{filename} 开始解压...')
-                archive = SevenZipFile(f'{path}/{filename}', mode='r')
-                archive.extractall(f'{path}')
-                archive.close()
-                print(f'{filename} 已解压完成!')
+# def _try_unzip_file(path):
+#     """
+#     尝试解压指定目录下的 7z 文件
+#     """
+#     for filename in os.listdir(f'{path}'):
+#         if filename.endswith('.7z'):
+#             full_path = f'{path}/{filename.replace(".7z", "")}'
+#             if os.path.exists(full_path) or os.path.exists(f'{full_path}.pcap'):
+#                 # 已经解压
+#                 print(f'{filename} 已经解压.')
+#             else:
+#                 # 解压
+#                 print(f'{filename} 开始解压...')
+#                 archive = SevenZipFile(f'{path}/{filename}', mode='r')
+#                 archive.extractall(f'{path}')
+#                 archive.close()
+#                 print(f'{filename} 已解压完成!')
 
 
 class USTCDataset(Dataset):
@@ -75,10 +75,10 @@ class USTCDataloader:
         self._data = []
         self._label = []
         # 尝试解压
-        self._stopwatch.start('Unzip .7z file')
-        _try_unzip_file(f'{self._origin_file_path}/Benign')
-        _try_unzip_file(f'{self._origin_file_path}/Malware')
-        self._stopwatch.stop()
+        # self._stopwatch.start('Unzip .7z file')
+        # _try_unzip_file(f'{self._origin_file_path}/Benign')
+        # _try_unzip_file(f'{self._origin_file_path}/Malware')
+        # self._stopwatch.stop()
 
         self._load_pcap_original_by_fold(f'{self._origin_file_path}/Benign')
         self._load_pcap_original_by_fold(f'{self._origin_file_path}/Malware')
