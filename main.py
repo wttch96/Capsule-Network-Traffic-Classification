@@ -8,7 +8,7 @@ from config import config
 from net import CapsuleNet
 from wttch.train.torch.utils import get_device_local, set_dtype_local, get_dtype_local
 import torch
-from util.data.USTC import USTCDataset, USTCDataloader
+from util.data.USTC_loader import USTCDataset, USTCDataloader
 import torch.nn.functional as F
 from wttch.train.utils import cache_wrapper
 from torch.nn.functional import one_hot

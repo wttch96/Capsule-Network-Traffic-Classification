@@ -1,10 +1,6 @@
 import torch
-from wttch.train.torch.utils import get_device_local
-from wttch.train.utils import cache_wrapper
 
 from capsule.layers import Conv2dCapsule, DenseCapsuleLayer
-from util.data.USTC import USTCDataset
-
 from torch import nn
 
 
