@@ -81,7 +81,7 @@ class USTCPreprocess:
         pck_data = np.zeros((data_len, self.max_len), dtype=np.uint8)
 
         for i, raw_data in enumerate(pcap):
-            if i >= data_count:
+            if i >= data_len:
                 break
             raw_data = raw_data.original
             # 包长度
@@ -96,7 +96,8 @@ class USTCPreprocess:
 
         for i in range(pck_data.shape[0]):
             # 写入图片
-            img_data = pck_data[i].reshape(self.img_w, self.img_h)
+            # img_data = pck_data[i].reshape(self.img_w, self.img_h)
+            img_data = pck_data[i]
             image = Image.fromarray(img_data)
             filename = f'{label}/{self.type_count[label]}.png'
             label_path = f'{self.img_save_path}/{label}'

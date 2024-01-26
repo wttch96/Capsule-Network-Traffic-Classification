@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.nn.init import xavier_uniform_
-from wttch.train.torch.utils import get_device_local
+from wttch.train.torch.utils import get_device_local, get_dtype_local
 
 from capsule.function import squash
 
@@ -22,6 +22,7 @@ class DenseCapsuleLayer(nn.Module):
 
         self.W = nn.Parameter(
             torch.zeros(self.out_caps_num, self.in_num_caps, self.out_caps_dim, self.in_dim_caps,
+                        dtype=get_dtype_local(),
                         device=get_device_local()))
 
         xavier_uniform_(self.W)
@@ -38,7 +39,9 @@ class DenseCapsuleLayer(nn.Module):
         # 动态路由最后一次才使用 u_hat 进行梯度
         u_hat_detached = u_hat.detach()
 
-        b = torch.zeros((x.size(0), self.out_caps_num, self.in_num_caps), device=get_device_local())
+        b = torch.zeros((x.size(0), self.out_caps_num, self.in_num_caps),
+                        dtype=get_dtype_local(),
+                        device=get_device_local())
 
         outputs = None
 
@@ -98,7 +101,9 @@ class Conv2dCapsule(nn.Module):
         # x     shape: [batch, -1, dim_caps]
         # W     shape: [caps_num, ]
         if self.W is None:
-            self.W = nn.Parameter(torch.zeros((self.caps_num, x.shape[1]), device=get_device_local()))
+            self.W = nn.Parameter(torch.zeros((self.caps_num, x.shape[1]),
+                                              dtype=get_dtype_local(),
+                                              device=get_device_local()))
             xavier_uniform_(self.W)
         # W @ x shape: [batch, caps_num, dim_caps]
         x = squash(self.W @ x)

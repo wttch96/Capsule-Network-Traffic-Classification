@@ -6,7 +6,6 @@ from torch.utils.data import Dataset
 from wttch.train.utils import StopWatch, cache_wrapper
 
 from util.data.USTC import all_types
-from util.data.USTC_preprocess import load_pcap_raw_data
 
 
 class USTCDataset(Dataset):
