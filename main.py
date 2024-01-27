@@ -9,7 +9,7 @@ from wttch.train.utils.progress import Progress
 
 from config import config
 from capsule.net import CapsuleNet
-from wttch.train.torch.utils import get_device_local, set_dtype_local, get_dtype_local
+from wttch.train.torch.utils import get_device_local, set_dtype_local, get_dtype_local, set_device_local, try_gpu
 import torch
 from util.data.USTC_loader import USTCDataset, USTCDataloader
 import torch.nn.functional as F
@@ -22,6 +22,8 @@ if __name__ == '__main__':
         Grayscale(),
         ToTensor()
     ])
+
+    set_device_local(try_gpu(3))
 
     image_folder = ImageFolder("USTC-TFC2016-IMAGE", transform=transform)
 
@@ -37,12 +39,13 @@ if __name__ == '__main__':
     loss_fn = nn.CrossEntropyLoss()
     optimizer = Adam(net.parameters(), lr=10e-3)
 
+    train_loader = DataLoader(train, shuffle=True, batch_size=64, num_workers=4)
+    test_loader = DataLoader(test, shuffle=True, batch_size=64, num_workers=4)
+
     for i in range(epochs):
         print(f"Epoch: {i + 1}/{epochs}")
         net.train()
         start = time.time()
-        train_loader = DataLoader(train, shuffle=True, batch_size=64, num_workers=4)
-        test_loader = DataLoader(test, shuffle=True, batch_size=64, num_workers=4)
         dataset_loader_len = len(train_loader)
         progress = Progress(train_loader)
         for _, (x, y) in enumerate(progress):  # type: int, tuple[torch.Tensor, torch.Tensor]
@@ -73,3 +76,6 @@ if __name__ == '__main__':
             notification.send_markdown(f"# Epoch: {i + 1}/{epochs} \n\n"
                                        f"> use: {time.time() - start: .02f} \n\n"
                                        f"> acc: {acc / total * 100: .2f}%", title=f"Epoch: {i + 1}/{epochs}")
+
+    torch.save(net.state_dict(), 'capsule_module.pkl')
+    notification.send_text("胶囊网络已保存!")
