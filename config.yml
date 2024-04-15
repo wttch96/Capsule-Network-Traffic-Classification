@@ -1,0 +1,63 @@
+active: local
+
+shared:
+  dingtalk:
+    webhook: https://oapi.dingtalk.com/robot/send?access_token=ce074c0e1097363b18d059a1884e59759c26e581346e1fb96203bc31e2d94ea4
+    secret: SEC54453b5108207047b5a28b57e149d0c41f484dfd2d7543d65063abe503d8df61
+
+  # 所有的模型定义, 这里没有具体模型的初始化参数, 只是告知模型在哪, 方便通过代码来初始化它
+  # 初始化参数, 在训练器中添加
+  models:
+    cnn1d:
+      module: baseline.cnn1d
+      cls: CNN1d
+  # 所有的训练器定义
+  trainers:
+    # 模型名称
+    # 二分类
+    cnn1d-all:
+      model:
+        name: cnn1d
+        init-parameters:
+          out_features: 2
+      # 数据集
+      dataset: ustc-all
+      # 模型初始化参数
+      parameters:
+        epochs: 20
+        devices: auto
+      # 模型输出路径
+      output-path:
+    cnn1d-benign:
+      # 数据集
+      dataset: ustc-benign
+      # 模型初始化参数
+      parameters:
+        epochs: 20
+        devices: auto
+      # 模型输出路径
+      output-path:
+
+local:
+  datasets:
+    ustc-all:
+      root-path: /Users/wttch/workspace/PG/PcapPreprocess/PcapPreprocess/datasets/USTC-example-capsule-20-1000
+      batch-size: 2
+      num-workers: 2
+    ustc-benign:
+      root-path: /Users/wttch/workspace/PG/PcapPreprocess/PcapPreprocess/datasets/USTC-example-capsule-20-1000/Benign
+      batch-size: 2
+      num-workers: 2
+    ustc-malware:
+      root-path: /Users/wttch/workspace/PG/PcapPreprocess/PcapPreprocess/datasets/USTC-example-capsule-20-1000/Malware
+      batch-size: 2
+      num-workers: 2
+
+
+
+server:
+  datasets:
+    ustc:
+      root-path: /home/wangc/datasets/USTC-TFC2016-Capsule-20-1000
+      batch-size: 64
+      num-workers: 19

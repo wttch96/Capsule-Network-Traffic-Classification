@@ -1,8 +1,7 @@
 scapy~=2.5.0
 numpy~=1.26.3
-py7zr~=0.20.8
 torch~=2.1.0
-wttch-train-helper~=0.0.13
+wttch-train-helper~=0.0.25
 Pillow~=10.1.0
 torchvision~=0.16.0
 tqdm~=4.66.1
