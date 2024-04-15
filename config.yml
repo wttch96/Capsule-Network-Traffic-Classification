@@ -1,0 +1,25 @@
+active: local
+
+local:
+  dingtalk:
+    webhook: https://oapi.dingtalk.com/robot/send?access_token=ce074c0e1097363b18d059a1884e59759c26e581346e1fb96203bc31e2d94ea4
+    secret: SEC54453b5108207047b5a28b57e149d0c41f484dfd2d7543d65063abe503d8df61
+
+  datasets:
+    ustc:
+      root-path: /Users/wttch/workspace/PG/PcapPreprocess/PcapPreprocess/datasets/USTC-example-capsule-20-1000
+      batch-size: 2
+      num-workers: 2
+
+
+
+server:
+  dingtalk:
+    webhook: https://oapi.dingtalk.com/robot/send?access_token=ce074c0e1097363b18d059a1884e59759c26e581346e1fb96203bc31e2d94ea4
+    secret: SEC54453b5108207047b5a28b57e149d0c41f484dfd2d7543d65063abe503d8df61
+
+  datasets:
+    ustc:
+      root-path: /home/wangc/datasets/USTC-TFC2016-Capsule-20-1000
+      batch-size: 64
+      num-workers: 19
