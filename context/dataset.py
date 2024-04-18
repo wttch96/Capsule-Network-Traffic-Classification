@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, Subset
 from torch.utils.data.dataset import Dataset, random_split, ConcatDataset
 from torchvision.datasets import ImageFolder
 from torchvision.transforms.v2 import Compose, Lambda, ToTensor, Grayscale, ToImage, ToDtype
-from wth.utils.config import Config
+from .config import Config
 
 
 class TrainAndTestDataset:
@@ -36,22 +36,26 @@ class DatasetContext:
 
     def __init__(self, config: Config):
         self.config = config
-        ustc = config['datasets']['ustc']
-        root_path = ustc['root-path']
-        batch_size = ustc['batch-size']
-        num_workers = ustc['num-workers']
 
-        transform = Compose([
+        self.transform = Compose([
             Grayscale(),
             ToImage(),
             ToDtype(torch.float32),
             Lambda(_scale),
         ])
 
-        self.dataset = ImageFolder(root_path, transform=transform)
+    def get_dataset(self, dataset: str):
+        dataset_config = self.config.get_dataset(dataset)
+        root_path = dataset_config['root-path']
+        batch_size = dataset_config['batch-size']
+        num_workers = dataset_config['num-workers']
 
-        train, val, test = random_split(self.dataset, [0.8, 0.1, 0.1])  # type: Subset, Subset, Subset
+        dataset = ImageFolder(root_path, transform=self.transform)
 
-        self.train = DataLoader(train, batch_size=batch_size, num_workers=num_workers)
-        self.test = DataLoader(test, batch_size=batch_size, num_workers=num_workers)
-        self.val = DataLoader(val, batch_size=batch_size, num_workers=num_workers)
+        train, val, test = random_split(dataset, [0.8, 0.1, 0.1])  # type: Subset, Subset, Subset
+
+        train_loader = DataLoader(train, batch_size=batch_size, num_workers=num_workers)
+        val_loader = DataLoader(val, batch_size=batch_size, num_workers=num_workers)
+        test_loader = DataLoader(test, batch_size=batch_size, num_workers=num_workers)
+
+        return train_loader, val_loader, test_loader

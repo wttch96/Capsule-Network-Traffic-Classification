@@ -23,8 +23,9 @@ shared:
       # 数据集
       dataset: ustc-all
       # 模型初始化参数
-      parameters:
-        epochs: 20
+      csv-logger-path: ./output/cnn1d/train.csv
+      init-parameters:
+        max_epochs: 20
         devices: auto
       # 模型输出路径
       output-path:

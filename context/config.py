@@ -13,26 +13,37 @@ class Config(_Config):
     def __init__(self, file: str = 'config.yml'):
         super().__init__(config_file=file)
 
-        # 所有的训练器
+        # 所有定义的训练器
         self.trainers = self['trainers']  # type: dict[str, dict]
+        # 所有定义的数据集
         self.datasets = self['datasets']  # type: dict[str, dict]
+        # 所有定义的模型
         self.models = self['models']  # type: dict[str, dict]
 
-    def _get_dataset(self, dataset: str) -> Optional[dict]:
+    def get_dataset(self, dataset: str) -> Optional[dict]:
+        if dataset not in self.datasets:
+            raise KeyError(f"Dataset '{dataset}' not found in {self.config_file}")
+
         return self.datasets[dataset]
 
-    def show_models(self):
+    def get_trainer(self, trainer_name: str) -> dict:
+        if trainer_name not in self.trainers:
+            raise KeyError(f"Trainer {trainer_name} not found in {self.config_file}")
+
+        return self.trainers[trainer_name]
+
+    def display_models(self):
         for k, v in self.models.items():
             print(f'{k}')
             print(f'    定义: {v}')
 
-    def show_datasets(self):
+    def display_datasets(self):
         """打印配置文件中所有定义的数据集。"""
         for k, v in self.datasets.items():
             print(f"数据集:{k}:")
             print(f"    参数:{v}")
 
-    def show_trainers(self):
+    def display_trainers(self):
         """打印配置文件中所有定义的训练器。"""
         for k, v in self.trainers.items():
             print(f"训练器:{k}")
