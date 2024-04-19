@@ -2,10 +2,9 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.nn.init import xavier_uniform_, uniform_
-from wttch.train.torch.utils import get_device_local, get_dtype_local
 
 from capsule.function import squash
-
+import pytorch_lightning as pl
 
 class Conv1dLayer(nn.Module):
     """
@@ -37,7 +36,7 @@ class Conv1dLayer(nn.Module):
         return x
 
 
-class ConvCapsuleLayer(nn.Module):
+class ConvCapsuleLayer(pl.LightningModule):
     """
     Convolutional Capsule Network Layer, 单个卷积胶囊单元。
 
@@ -80,12 +79,8 @@ class ConvCapsuleLayer(nn.Module):
             # W      shape: [num_caps, _]
             # 这样的话
             # W @ x  shape: [num_caps, _] @ [batch, _, dim_caps] = [batch, num_caps, dim_caps]
-            self.W = nn.Parameter(torch.zeros((self.num_caps, x.shape[1]),
-                                              dtype=get_dtype_local(),
-                                              device=get_device_local()))
-            self.b = nn.Parameter(torch.zeros((self.num_caps, self.dim_caps),
-                                              dtype=get_dtype_local(),
-                                              device=get_device_local()))
+            self.W = nn.Parameter(torch.zeros((self.num_caps, x.shape[1]), device=self.device))
+            self.b = nn.Parameter(torch.zeros((self.num_caps, self.dim_caps), device=self.device))
             xavier_uniform_(self.W)
             uniform_(self.b)
 
@@ -104,7 +99,7 @@ class ConvCapsuleLayer(nn.Module):
         return squash(x)
 
 
-class DenseCapsuleLayer(nn.Module):
+class DenseCapsuleLayer(pl.LightningModule):
     """
     Fully-Connected Capsule Network Layer, 全连接胶囊网络层。
     主要是动态路由的实现。
@@ -158,13 +153,8 @@ class DenseCapsuleLayer(nn.Module):
         # 其实论文写的挺清楚：向量之间的关系
         #   u_hat_W:[out_dim_caps, in_dim_caps]
         #   u_hat_b:[out_dim_caps]
-        self.u_hat_W = nn.Parameter(
-            torch.zeros(self.out_dim_caps, self.in_dim_caps,
-                        dtype=get_dtype_local(),
-                        device=get_device_local()))
-        self.u_hat_b = nn.Parameter(
-            torch.zeros(self.out_dim_caps, dtype=get_dtype_local(), device=get_device_local())
-        )
+        self.u_hat_W = nn.Parameter(torch.zeros(self.out_dim_caps, self.in_dim_caps, device=self.device))
+        self.u_hat_b = nn.Parameter(torch.zeros(self.out_dim_caps, device=self.device))
 
         xavier_uniform_(self.u_hat_W)
         uniform_(self.u_hat_b)
@@ -192,9 +182,7 @@ class DenseCapsuleLayer(nn.Module):
         #                 dtype=get_dtype_local(),
         #                 device=get_device_local())
         # 为了方便运算, 使用 [batch, out_num_caps, in_num_caps]
-        b = torch.zeros((x.size(0), self.out_num_caps, self.in_num_caps),
-                        dtype=get_dtype_local(),
-                        device=get_device_local())
+        b = torch.zeros((x.size(0), self.out_num_caps, self.in_num_caps), device=self.device)
 
         v = None
 

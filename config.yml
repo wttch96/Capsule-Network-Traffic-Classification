@@ -11,10 +11,24 @@ shared:
     cnn1d:
       module: baseline.cnn1d
       cls: CNN1d
+    capsule:
+      module: capsule.net
+      cls: CapsuleNet
   # 所有的训练器定义
   trainers:
-    # 模型名称
-    # 二分类
+    # 胶囊网络二分类
+    capsule-all:
+      model:
+        name: capsule
+        init-parameters:
+          out_features: 2
+      dataset: ustc-all
+      csv-logger-path: ./output/capsule-all/train.csv
+      init-parameters:
+        max_epochs: 20
+        devices: auto
+
+    # 1D-CNN 二分类
     cnn1d-all:
       model:
         name: cnn1d
@@ -57,6 +71,35 @@ local:
 
 
 server:
+  # 所有的训练器定义
+  trainers:
+    # 胶囊网络二分类
+    capsule-all:
+      model:
+        name: capsule
+        init-parameters:
+          out_features: 2
+      dataset: ustc-all
+      csv-logger-path: ./output/capsule-all/train.csv
+      init-parameters:
+        max_epochs: 20
+        devices: [2, 3]
+
+    # 1D-CNN 二分类
+    cnn1d-all:
+      model:
+        name: cnn1d
+        init-parameters:
+          out_features: 2
+      # 数据集
+      dataset: ustc-all
+      # 模型初始化参数
+      csv-logger-path: ./output/cnn1d-all/train.csv
+      init-parameters:
+        max_epochs: 20
+        devices: [2, 3]
+      # 模型输出路径
+      output-path:
   datasets:
     ustc:
       root-path: /home/wangc/datasets/USTC-TFC2016-Capsule-20-1000
