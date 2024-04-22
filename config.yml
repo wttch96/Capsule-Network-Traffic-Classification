@@ -16,8 +16,6 @@ shared:
       cls: CapsuleNet
 
 
-# 本地测试用
-local:
   # 所有的训练器定义
   trainers:
 
@@ -88,6 +86,40 @@ local:
         max_epochs: 20
         devices: auto
 
+# 本地测试用
+local:
+  # 所有的训练器定义
+  trainers:
+    # 胶囊网络二分类
+    capsule-all:
+      init-parameters:
+        max_epochs: 20
+        devices: auto
+
+
+    # 胶囊网络良性流量
+    capsule-benign:
+      init-parameters:
+        max_epochs: 20
+        devices: auto
+
+    # 胶囊网络恶意流量
+    capsule-malware:
+      init-parameters:
+        max_epochs: 20
+        devices: auto
+
+
+    # 1D-CNN 二分类
+    cnn1d-all:
+      init-parameters:
+        max_epochs: 20
+        devices: auto
+    cnn1d-benign:
+      init-parameters:
+        max_epochs: 20
+        devices: auto
+
   # 数据集
   datasets:
     ustc-all:
@@ -111,56 +143,28 @@ server:
 
     # 胶囊网络二分类
     capsule-all:
-      model:
-        name: capsule
-        init-parameters:
-          out_features: 2
-      dataset: ustc-all
-      csv-logger-path: ./output/capsule-all/train.csv
       init-parameters:
         max_epochs: 30
         devices: [2, 3]
 
     # 胶囊网络良性流量
     capsule-benign:
-      model:
-        name: capsule
-        init-parameters:
-          out_features: 10
-      dataset: ustc-benign
-      csv-logger-path: ./output/capsule-benign/train.csv
       init-parameters:
         max_epochs: 30
         devices: [2, 3]
 
     # 胶囊网络恶意流量
     capsule-malware:
-      model:
-        name: capsule
-        init-parameters:
-          out_features: 10
-
-      dataset: ustc-benign
-      csv-logger-path: ./output/capsule-malware/train.csv
       init-parameters:
         max_epochs: 30
         devices: [2, 3]
 
     # 1D-CNN 二分类
     cnn1d-all:
-      model:
-        name: cnn1d
-        init-parameters:
-          out_features: 2
-      # 数据集
-      dataset: ustc-all
-      # 模型初始化参数
-      csv-logger-path: ./output/cnn1d-all/train.csv
       init-parameters:
         max_epochs: 30
         devices: [2, 3]
-      # 模型输出路径
-      output-path:
+
   datasets:
     ustc-all:
       root-path: /home/wangc/datasets/USTC-TFC2016-Capsule-20-1000
