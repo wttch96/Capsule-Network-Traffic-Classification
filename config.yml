@@ -47,6 +47,19 @@ local:
         max_epochs: 20
         devices: auto
 
+    # 胶囊网络恶意流量
+    capsule-malware:
+      model:
+        name: capsule
+        init-parameters:
+          out_features: 10
+
+      dataset: ustc-malware
+      csv-logger-path: ./output/capsule-malware/train.csv
+      init-parameters:
+        max_epochs: 20
+        devices: auto
+
 
     # 1D-CNN 二分类
     cnn1d-all:
@@ -64,14 +77,16 @@ local:
       # 模型输出路径
       output-path:
     cnn1d-benign:
+      model:
+        name: cnn1d
+        init-parameters:
+          out_features: 10
       # 数据集
       dataset: ustc-benign
-      # 模型初始化参数
-      parameters:
-        epochs: 20
+      csv-logger-path: ./output/cnn1d-benign/train.csv
+      init-parameters:
+        max_epochs: 20
         devices: auto
-      # 模型输出路径
-      output-path:
 
   # 数据集
   datasets:
@@ -93,6 +108,7 @@ local:
 server:
   # 所有的训练器定义
   trainers:
+
     # 胶囊网络二分类
     capsule-all:
       model:
@@ -102,8 +118,10 @@ server:
       dataset: ustc-all
       csv-logger-path: ./output/capsule-all/train.csv
       init-parameters:
-        max_epochs: 20
+        max_epochs: 30
         devices: [2, 3]
+
+    # 胶囊网络良性流量
     capsule-benign:
       model:
         name: capsule
@@ -112,7 +130,20 @@ server:
       dataset: ustc-benign
       csv-logger-path: ./output/capsule-benign/train.csv
       init-parameters:
-        max_epochs: 20
+        max_epochs: 30
+        devices: [2, 3]
+
+    # 胶囊网络恶意流量
+    capsule-malware:
+      model:
+        name: capsule
+        init-parameters:
+          out_features: 10
+
+      dataset: ustc-benign
+      csv-logger-path: ./output/capsule-malware/train.csv
+      init-parameters:
+        max_epochs: 30
         devices: [2, 3]
 
     # 1D-CNN 二分类
@@ -126,7 +157,7 @@ server:
       # 模型初始化参数
       csv-logger-path: ./output/cnn1d-all/train.csv
       init-parameters:
-        max_epochs: 20
+        max_epochs: 30
         devices: [2, 3]
       # 模型输出路径
       output-path:
@@ -137,5 +168,9 @@ server:
       num-workers: 19
     ustc-benign:
       root-path: /home/wangc/datasets/USTC-TFC2016-Capsule-20-1000/Benign
+      batch-size: 64
+      num-workers: 19
+    ustc-malware:
+      root-path: /home/wangc/datasets/USTC-TFC2016-Capsule-20-1000/Malware
       batch-size: 64
       num-workers: 19

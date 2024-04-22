@@ -47,7 +47,7 @@ class Config(_Config):
         """打印配置文件中所有定义的训练器。"""
         for k, v in self.trainers.items():
             print(f"训练器:{k}")
-            print(f"    参数: {v['parameters']}")
+            print(f"    参数: {v['init-parameters']}")
             dataset = v['dataset']
             if dataset in self.datasets:
                 print(f"    数据集: {dataset}")

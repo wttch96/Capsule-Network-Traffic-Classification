@@ -38,5 +38,8 @@ class CapsuleNetApp(App):
         if args.show_models:
             config.display_models()
 
+        if args.show_trainers or args.show_models or args.show_datasets:
+            return
+
         trainer_context = TrainerContext(config)
         trainer_context.start_train(args.start_train)
