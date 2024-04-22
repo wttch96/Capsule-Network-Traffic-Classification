@@ -14,8 +14,13 @@ shared:
     capsule:
       module: capsule.net
       cls: CapsuleNet
+
+
+# 本地测试用
+local:
   # 所有的训练器定义
   trainers:
+
     # 胶囊网络二分类
     capsule-all:
       model:
@@ -27,6 +32,21 @@ shared:
       init-parameters:
         max_epochs: 20
         devices: auto
+
+
+    # 胶囊网络良性流量
+    capsule-benign:
+      model:
+        name: capsule
+        init-parameters:
+          out_features: 10
+
+      dataset: ustc-benign
+      csv-logger-path: ./output/capsule-benign/train.csv
+      init-parameters:
+        max_epochs: 20
+        devices: auto
+
 
     # 1D-CNN 二分类
     cnn1d-all:
@@ -53,7 +73,7 @@ shared:
       # 模型输出路径
       output-path:
 
-local:
+  # 数据集
   datasets:
     ustc-all:
       root-path: /Users/wttch/workspace/PG/PcapPreprocess/PcapPreprocess/datasets/USTC-example-capsule-20-1000
@@ -69,7 +89,7 @@ local:
       num-workers: 2
 
 
-
+# 服务器端训练用配置
 server:
   # 所有的训练器定义
   trainers:
@@ -81,6 +101,16 @@ server:
           out_features: 2
       dataset: ustc-all
       csv-logger-path: ./output/capsule-all/train.csv
+      init-parameters:
+        max_epochs: 20
+        devices: [2, 3]
+    capsule-benign:
+      model:
+        name: capsule
+        init-parameters:
+          out_features: 10
+      dataset: ustc-benign
+      csv-logger-path: ./output/capsule-benign/train.csv
       init-parameters:
         max_epochs: 20
         devices: [2, 3]
@@ -101,7 +131,11 @@ server:
       # 模型输出路径
       output-path:
   datasets:
-    ustc:
+    ustc-all:
       root-path: /home/wangc/datasets/USTC-TFC2016-Capsule-20-1000
+      batch-size: 64
+      num-workers: 19
+    ustc-benign:
+      root-path: /home/wangc/datasets/USTC-TFC2016-Capsule-20-1000/Benign
       batch-size: 64
       num-workers: 19

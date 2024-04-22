@@ -43,4 +43,4 @@ class TrainerContext:
         # 训练
         trainer.fit(model, train_dataloaders=train, val_dataloaders=val)
         # 测试
-        train.test(model, test_dataloaders=test)
+        trainer.test(model, test)
