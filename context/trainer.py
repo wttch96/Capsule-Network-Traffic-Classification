@@ -32,7 +32,7 @@ class TrainerContext:
             f"已加载数据集 [{dataset_name}]. 训练集长度: {len(train)}, 验证集长度: {len(val)}, 测试集长度: {len(test)}")
         # 初始化模型
         model_config = trainer_config['model']
-        model = self.model_ctx.get_model(model_config)
+        model = self.model_ctx.get_model(model_config, weight=self.dataset_ctx.class_weights)
 
         # 训练器
         init_parameters = trainer_config['init-parameters']

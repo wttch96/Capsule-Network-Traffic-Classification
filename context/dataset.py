@@ -1,11 +1,12 @@
 from abc import abstractmethod
 
 import torch
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 from torch.utils.data.dataset import Dataset, random_split, ConcatDataset
 from torchvision.datasets import ImageFolder
 from torchvision.transforms.v2 import Compose, Lambda, ToTensor, Grayscale, ToImage, ToDtype
 from .config import Config
+import torch.nn.functional as F
 
 
 class TrainAndTestDataset:
@@ -32,12 +33,10 @@ def _scale(x):
 class DatasetContext:
     """
     数据集都放在这里
-    Attributes:
-        classes (list[str]): 为了获取所有的分类类型，注意保证定义和使用是一致的。每次调用 get_dataset 这个静态变量都会被覆盖。
     """
-    classes: list[str] = []
 
     def __init__(self, config: Config):
+        self.class_weights = None
         self.config = config
 
         self.transform = Compose([
@@ -55,13 +54,15 @@ class DatasetContext:
 
         dataset = ImageFolder(root_path, transform=self.transform)
 
+        class_count = torch.tensor(dataset.targets).bincount()
+        class_weights = 1.0 / class_count.float()
+
+        self.class_weights = F.softmax(class_weights)
+
         train, val, test = random_split(dataset, [0.8, 0.1, 0.1])  # type: Subset, Subset, Subset
 
         train_loader = DataLoader(train, batch_size=batch_size, num_workers=num_workers, persistent_workers=True)
         val_loader = DataLoader(val, batch_size=batch_size, num_workers=num_workers, persistent_workers=True)
         test_loader = DataLoader(test, batch_size=batch_size, num_workers=num_workers, persistent_workers=True)
-
-        # 记录分类名
-        DatasetContext.classes = dataset.classes
 
         return train_loader, val_loader, test_loader

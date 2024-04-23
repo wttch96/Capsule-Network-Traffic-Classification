@@ -29,7 +29,7 @@ class ModelContext:
 
         self.models = self.config['models']
 
-    def get_model(self, model_params: dict):
+    def get_model(self, model_params: dict, weight):
         """
         根据模型声明的参数来构造模型。
         :param model_params: trainer 使用的字典, 包含模型的名称和初始化参数
@@ -47,7 +47,7 @@ class ModelContext:
         module = importlib.import_module(model_module)
         cls = getattr(module, model_cls)
 
-        model = cls(**model_init_parameters)
+        model = cls(weight=weight, **model_init_parameters)
         print(f"初始化模型成功, type: {type(model)}")
         print(f"模型定义: {model}")
         return model
