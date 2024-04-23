@@ -93,31 +93,31 @@ local:
     # 胶囊网络二分类
     capsule-all:
       init-parameters:
-        max_epochs: 20
+        max_epochs: 2
         devices: auto
 
 
     # 胶囊网络良性流量
     capsule-benign:
       init-parameters:
-        max_epochs: 20
+        max_epochs: 2
         devices: auto
 
     # 胶囊网络恶意流量
     capsule-malware:
       init-parameters:
-        max_epochs: 20
+        max_epochs: 2
         devices: auto
 
 
     # 1D-CNN 二分类
     cnn1d-all:
       init-parameters:
-        max_epochs: 20
+        max_epochs: 2
         devices: auto
     cnn1d-benign:
       init-parameters:
-        max_epochs: 20
+        max_epochs: 2
         devices: auto
 
   # 数据集

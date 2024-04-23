@@ -5,6 +5,7 @@ import torch
 from torch import nn
 
 from capsule.layers import Conv1dLayer, ConvCapsuleLayer, DenseCapsuleLayer
+from metrics import Metrics
 
 
 class CapsuleNet(pl.LightningModule):
@@ -31,6 +32,8 @@ class CapsuleNet(pl.LightningModule):
         self.loss_fn = nn.CrossEntropyLoss()
         self.lr = 0.001
 
+        self.metrics = Metrics(num_classes=out_features)
+
     def forward(self, x: torch.Tensor):
         # batch, 20, 1100 -> batch, 1, 20, 1100
         # x = x.reshape((x.shape[0], -1) + x.shape[1:])
@@ -52,31 +55,34 @@ class CapsuleNet(pl.LightningModule):
         x, y = batch
         x = self(x)
         loss = self.loss_fn(x, y)
-        pred = torch.argmax(x, dim=-1)
-        acc = (pred == y).float().mean()
-        self.log('train_acc', acc, on_step=True, prog_bar=True, sync_dist=True)
         self.log('train_loss', loss, on_step=True, prog_bar=True, sync_dist=True)
+        self.metrics.train_step_metrics(self, x, y)
         return loss
 
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-        x = self(x)
-        loss = self.loss_fn(x, y)
-        pred = torch.argmax(x, dim=-1)
-        acc = (pred == y).float().mean()
-        self.log('test_acc', acc, sync_dist=True)
-        self.log('test_loss', loss, sync_dist=True)
-        return loss
+    def on_train_epoch_end(self):
+        self.metrics.train_epoch_metrics(self)
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         x = self(x)
         loss = self.loss_fn(x, y)
-        pred = torch.argmax(x, dim=-1)
-        acc = (pred == y).float().mean()
-        self.log('val_acc', acc, sync_dist=True)
         self.log('val_loss', loss, sync_dist=True)
+        self.metrics.validation_step_metrics(x, y)
         return loss
+
+    def on_validation_epoch_end(self):
+        self.metrics.validation_epoch_metrics(self)
+
+    def test_step(self, batch, batch_idx):
+        x, y = batch
+        x = self(x)
+        loss = self.loss_fn(x, y)
+        self.log('test_loss', loss, sync_dist=True)
+        self.metrics.test_step_metrics(x, y)
+        return loss
+
+    def on_test_epoch_end(self) -> None:
+        self.metrics.test_epoch_metrics(self)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr)
